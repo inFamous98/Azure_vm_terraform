@@ -1,8 +1,17 @@
+resource "azurerm_storage_account" "example" {
+  count                 = length(var.vm_configurations) > 0 ? 1 : 0
+  name                  = var.storage_account_name
+  resource_group_name   = var.resource_group_name
+  location              = var.location
+  account_tier          = var.storage_account_tier
+  account_replication_type   = var.storage_account_replication
+}
+
 resource "azurerm_virtual_machine" "example" {
   count                 = length(var.vm_configurations) > 0 ? sum([for config in var.vm_configurations : config.count]) : 0
   name                  = "${var.vm_configurations[count.index % length(var.vm_configurations)].name}-${count.index}"
-  location              = var.location
-  resource_group_name   = var.resource_group_name
+  location              = var.vm_configurations[count.index % length(var.vm_configurations)].location
+  resource_group_name   = var.vm_configurations[count.index % length(var.vm_configurations)].resource_group_name
   network_interface_ids = [var.vm_configurations[count.index % length(var.vm_configurations)].network_interface_id]
   vm_size               = var.vm_configurations[count.index % length(var.vm_configurations)].vm_size
 
